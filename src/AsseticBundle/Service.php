@@ -172,6 +172,40 @@ class Service
                 $this->prepareCollection($options, $name, $factory);
             }
         }
+
+        $this->createAssetsWithDecps();
+    }
+
+    private function createAssetsWithDecps()
+    {
+        $depth = 0;
+        while(!empty($this->_assets)) {
+            $depth++;
+            if ($depth > 5) {
+                die('Too deep!');
+            }
+            foreach ($this->_assets as $name => $_asset) {
+//                echo "$name\n";
+                unset($this->_assets[$name]);
+                if (is_array($_asset['assets'])) {
+                    foreach ($_asset['assets'] as $reqAsset) {
+//                        echo "-- $reqAsset ";
+                        if (is_string($reqAsset) && $reqAsset[0] === '@') {
+                            if ($this->assetManager->has(substr($reqAsset, 1))) {
+//                                echo "OK\n";
+                            } else {
+                                $this->_assets[$name] = $_asset;
+                                //die(var_dump(array_keys($this->_assets)));
+                                continue(2);
+                            }
+                        }
+                    }
+                }
+
+                $asset = $_asset['factory']->createAsset($_asset['assets'], $_asset['filters'], $_asset['options']);
+                $this->assetManager->set($name, $asset);
+            }
+        }
     }
 
     private function cacheAsset(AssetInterface $asset)
@@ -447,15 +481,18 @@ class Service
         $moveRaw = isset($options['move_raw']) && $options['move_raw'];
 
         $filters = $this->initFilters($filters);
-        $asset = $factory->createAsset($assets, $filters, $options);
+
+        $this->_assets[$name] = [ 'assets' => $assets, 'filters' => $filters, 'options' => $options, 'factory' => $factory ];
+
+        //////$asset = $factory->createAsset($assets, $filters, $options);
 
         // Allow to move all files 1:1 to new directory
         // its particularly useful when this assets are i.e. images.
         if ($moveRaw) {
-            $this->moveRaw($asset);
+          ///  $this->moveRaw($asset);
         } else {
-            $asset = $this->cacheAsset($asset);
-            $this->assetManager->set($name, $asset);
+           ///// $asset = $this->cacheAsset($asset);
+        /////    $this->assetManager->set($name, $asset);
         }
     }
 

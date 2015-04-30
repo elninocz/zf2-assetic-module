@@ -46,7 +46,7 @@ class Listener implements ListenerAggregateInterface
     {
         $sm     = $e->getApplication()->getServiceManager();
         /** @var Configuration $config */
-        $config = $sm->get('AsseticConfiguration');
+        $config = $sm->get('AsseticConfiguration');//die(json_encode((array)$config, JSON_PRETTY_PRINT));
         if ($e->getName() === MvcEvent::EVENT_DISPATCH_ERROR) {
             $error = $e->getError();
             if ($error && !in_array($error, $config->getAcceptableErrors())) {
