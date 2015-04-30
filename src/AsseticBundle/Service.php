@@ -203,7 +203,13 @@ class Service
                 }
 
                 $asset = $_asset['factory']->createAsset($_asset['assets'], $_asset['filters'], $_asset['options']);
-                $this->assetManager->set($name, $asset);
+
+                if ($_asset['move_raw']) {
+                    $this->moveRaw($asset);
+                } else {
+                    $asset = $this->cacheAsset($asset);
+                    $this->assetManager->set($name, $asset);
+                }
             }
         }
     }
@@ -482,7 +488,7 @@ class Service
 
         $filters = $this->initFilters($filters);
 
-        $this->_assets[$name] = [ 'assets' => $assets, 'filters' => $filters, 'options' => $options, 'factory' => $factory ];
+        $this->_assets[$name] = [ 'assets' => $assets, 'filters' => $filters, 'options' => $options, 'factory' => $factory, 'move_raw' => $moveRaw ];
 
         //////$asset = $factory->createAsset($assets, $filters, $options);
 
